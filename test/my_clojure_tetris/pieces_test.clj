@@ -2,8 +2,7 @@
   (:require [clojure.test :refer :all])
   (:require [my-clojure-tetris.pieces :as pieces]
             [schema-generators.generators :as gen]
-            [my-clojure-tetris.schemas :as schemas]
-            [schema.core :as s]))
+            [my-clojure-tetris.schemas :as schemas]))
 
 (def tl (-> (gen/generate schemas/Tile)
             (assoc :line 999)
@@ -38,6 +37,9 @@
 
 (def skew-piece-blocks [[bk sk sk]
                         [sk sk bk]])
+
+(def square-piece-blocks [[sk sk]
+                          [sk sk]])
 
 (deftest inject-piece-in-column-test
   (testing ""
@@ -116,33 +118,86 @@
 
 (deftest advance-line?-test
   (testing "Should advance when the piece is in the beginning of matrix"
-    (let [piece {:blocks skew-piece-blocks
-                 :current-line 0
+    (let [piece {:blocks         skew-piece-blocks
+                 :current-line   0
                  :current-column 1}]
       (is (true? (pieces/advance-line? piece empty-matrix)))))
   (testing "Should not advance if the piece is at the end of matrix"
-    (let [piece {:blocks skew-piece-blocks
-                 :current-line 2
+    (let [piece {:blocks         skew-piece-blocks
+                 :current-line   2
                  :current-column 0}]
       (is false? (pieces/advance-line? piece empty-matrix))))
 
   (testing "Should not advance if the piece is passed the end of matrix"
-    (let [piece {:blocks skew-piece-blocks
-                 :current-line 3
+    (let [piece {:blocks         skew-piece-blocks
+                 :current-line   3
                  :current-column 0}]
       (is false? (pieces/advance-line? piece empty-matrix)))))
 
 (deftest get-calculated-line
   (testing "Should get line 2 when the piece has 2 lines and the matrix 4, but is trying to insert into line 4"
     (is (= 2
-           (pieces/get-calculated-line {:blocks         skew-piece-blocks
-                                        :current-line   4
-                                        :current-column 0}
-                                       empty-matrix))))
+           (pieces/calculated-line {:blocks         skew-piece-blocks
+                                    :current-line   4
+                                    :current-column 0}
+                                   empty-matrix))))
 
   (testing "Should get line 2 when the piece has 2 lines and the matrix 4, but is trying to insert into line 3"
     (is (= 2
-           (pieces/get-calculated-line {:blocks         skew-piece-blocks
-                                        :current-line   3
-                                        :current-column 0}
-                                       empty-matrix)))))
+           (pieces/calculated-line {:blocks         skew-piece-blocks
+                                    :current-line   3
+                                    :current-column 0}
+                                   empty-matrix)))))
+
+(deftest collided?-test
+  (testing "Should not collide"
+    (let [piece {:blocks         skew-piece-blocks
+                 :current-line   0
+                 :current-column 0}]
+      (is (false? (pieces/collided? piece
+                                    empty-matrix))))
+
+    (let [piece {:blocks         skew-piece-blocks
+                 :current-line   3
+                 :current-column 3}]
+      (is (false? (pieces/collided? piece
+                                    empty-matrix)))))
+
+  (testing "Should collide"
+    (let [filled-matrix [first-line
+                         second-line
+                         [t3 ts3 ts3 t3]
+                         [ts4 ts4 t4 t4]]
+          piece         {:blocks         skew-piece-blocks
+                         :current-line   0
+                         :current-column 0}]
+      (is (true? (pieces/collided? piece
+                                   filled-matrix))))
+    (let [filled-matrix [first-line
+                         second-line
+                         [t3 t3 t3 ts3]
+                         [t4 ts4 ts4 ts4]]
+          piece         {:blocks         skew-piece-blocks
+                         :current-line   1
+                         :current-column 1}]
+      (is (true? (pieces/collided? piece
+                                   filled-matrix))))
+    (let [filled-matrix [first-line
+                         [t2 t2 ts2 t2]
+                         [t3 t3 ts3 t3]
+                         [t4 t4 ts4 t4]]
+          piece         {:blocks         skew-piece-blocks
+                         :current-line   0
+                         :current-column 0}]
+      (is (true? (pieces/collided? piece
+                                   filled-matrix))))
+
+    (let [filled-matrix [first-line
+                         [t2 t2 t2 t2]
+                         [ts3 t3 t3 t3]
+                         [ts4 ts4 t4 t4]]
+          piece         {:blocks         square-piece-blocks
+                         :current-line   1
+                         :current-column 1}]
+      (is (true? (pieces/collided? piece
+                                   filled-matrix))))))

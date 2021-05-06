@@ -10,16 +10,12 @@
              :total-of-lines   20
              :total-of-columns 10})
 
-(def empty-matrix (matrix/get-matrix [] CONFIG))
-(def _MTX_ (atom empty-matrix))
+(def _GAME_MTX_ (atom (matrix/get-matrix [] CONFIG)))
+(def _MTX_ (atom (matrix/get-matrix [] CONFIG)))
 
 ;TODO: Move this to other file
-(def sk {:type :SKEW})
-(def bk {:type :BLANK})
-(def _CURRENT_PIECE_ (atom {:blocks [[bk sk sk]
-                                     [sk sk bk]]
-                    :current-line   0
-                    :current-column 0}))
+
+(def _CURRENT_PIECE_ (atom (pieces/get-next-piece CONFIG)))
 
 (s/def _LAST_TIME_PIECE_MOVED_ (atom (System/currentTimeMillis)))
 
@@ -27,26 +23,39 @@
 (def WINDOW-WIDTH (* 10 (:default-width CONFIG)))
 (def WINDOW-HEIGHT (* (:default-height CONFIG) (+ (:total-of-lines CONFIG) 4)))
 
-
 (defn move-current-piece []
   (let [currentTimeMillis             (System/currentTimeMillis)
         milli-passed-since-last-moved (- currentTimeMillis @_LAST_TIME_PIECE_MOVED_)]
-    (if (> milli-passed-since-last-moved 1000)
+    (if (> milli-passed-since-last-moved 100)
       (do (reset! _LAST_TIME_PIECE_MOVED_ currentTimeMillis)
-          (when (true? (pieces/advance-line? @_CURRENT_PIECE_ empty-matrix))
+          (when (true? (pieces/advance-line? @_CURRENT_PIECE_ @_MTX_))
             (swap! _CURRENT_PIECE_ pieces/advance-line))))))
+
+(defn setup-current-piece []
+  (when (or (pieces/need-new-piece? @_CURRENT_PIECE_ @_MTX_)
+            (pieces/collided? @_CURRENT_PIECE_ @_GAME_MTX_))
+    (reset! _CURRENT_PIECE_ (pieces/get-next-piece CONFIG))))
+
+(defn setup-matrix []
+  (when (or (pieces/need-new-piece? @_CURRENT_PIECE_ @_MTX_)
+            (pieces/collided? @_CURRENT_PIECE_ @_GAME_MTX_))
+    (do
+      (reset! _GAME_MTX_
+              (pieces/insert-piece @_CURRENT_PIECE_ @_GAME_MTX_)))))
 
 (defn run-game []
   ;TODO: Create a new piece when is needed
+  (setup-matrix)
+  (setup-current-piece)
   (move-current-piece)
   (reset! _MTX_
-          (pieces/insert-piece @_CURRENT_PIECE_ empty-matrix)))
+          (pieces/insert-piece @_CURRENT_PIECE_ @_GAME_MTX_)))
 
 (defn draw []
   (run-game)
   (view/print-blocks! @_MTX_ 2))
 
-(q/defsketch my
+(q/defsketch my-tetris-game
              :host "host"
              :size [WINDOW-WIDTH WINDOW-HEIGHT]
              :draw (var draw))
