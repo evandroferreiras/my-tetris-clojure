@@ -11,10 +11,7 @@
 (def sk {:type :SKEW})
 (def bk {:type :BLANK})
 
-(def ts (assoc tl :block sk))
-
 (def t1 (assoc tl :line 100))
-(def ts1 (assoc t1 :block sk))
 
 (def first-line [t1 t1 t1 t1])
 
@@ -37,21 +34,6 @@
 
 (def skew-piece-blocks [[bk sk sk]
                         [sk sk bk]])
-
-(def square-piece-blocks [[sk sk]
-                          [sk sk]])
-
-(deftest inject-piece-in-column-test
-  (testing ""
-    (let []
-      (is (= [tl ts ts tl]
-             (pieces/inject-piece-in-column [tl tl tl tl]
-                                            [bk sk sk bk]
-                                            0)))
-      (is (= [tl ts ts tl]
-             (pieces/inject-piece-in-column [tl tl tl tl]
-                                            [bk sk sk]
-                                            0))))))
 
 (deftest insert-piece-test
   (testing "Should insert the :SKEW piece in the column and line 1"
@@ -133,71 +115,3 @@
                  :current-line   3
                  :current-column 0}]
       (is false? (pieces/advance-line? piece empty-matrix)))))
-
-(deftest get-calculated-line
-  (testing "Should get line 2 when the piece has 2 lines and the matrix 4, but is trying to insert into line 4"
-    (is (= 2
-           (pieces/calculated-line {:blocks         skew-piece-blocks
-                                    :current-line   4
-                                    :current-column 0}
-                                   empty-matrix))))
-
-  (testing "Should get line 2 when the piece has 2 lines and the matrix 4, but is trying to insert into line 3"
-    (is (= 2
-           (pieces/calculated-line {:blocks         skew-piece-blocks
-                                    :current-line   3
-                                    :current-column 0}
-                                   empty-matrix)))))
-
-(deftest collided?-test
-  (testing "Should not collide"
-    (let [piece {:blocks         skew-piece-blocks
-                 :current-line   0
-                 :current-column 0}]
-      (is (false? (pieces/collided? piece
-                                    empty-matrix))))
-
-    (let [piece {:blocks         skew-piece-blocks
-                 :current-line   3
-                 :current-column 3}]
-      (is (false? (pieces/collided? piece
-                                    empty-matrix)))))
-
-  (testing "Should collide"
-    (let [filled-matrix [first-line
-                         second-line
-                         [t3 ts3 ts3 t3]
-                         [ts4 ts4 t4 t4]]
-          piece         {:blocks         skew-piece-blocks
-                         :current-line   0
-                         :current-column 0}]
-      (is (true? (pieces/collided? piece
-                                   filled-matrix))))
-    (let [filled-matrix [first-line
-                         second-line
-                         [t3 t3 t3 ts3]
-                         [t4 ts4 ts4 ts4]]
-          piece         {:blocks         skew-piece-blocks
-                         :current-line   1
-                         :current-column 1}]
-      (is (true? (pieces/collided? piece
-                                   filled-matrix))))
-    (let [filled-matrix [first-line
-                         [t2 t2 ts2 t2]
-                         [t3 t3 ts3 t3]
-                         [t4 t4 ts4 t4]]
-          piece         {:blocks         skew-piece-blocks
-                         :current-line   0
-                         :current-column 0}]
-      (is (true? (pieces/collided? piece
-                                   filled-matrix))))
-
-    (let [filled-matrix [first-line
-                         [t2 t2 t2 t2]
-                         [ts3 t3 t3 t3]
-                         [ts4 ts4 t4 t4]]
-          piece         {:blocks         square-piece-blocks
-                         :current-line   1
-                         :current-column 1}]
-      (is (true? (pieces/collided? piece
-                                   filled-matrix))))))

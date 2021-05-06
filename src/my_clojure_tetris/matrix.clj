@@ -25,19 +25,6 @@
         all-lines-numbered (mapv set-line-number all-lines (range (count all-lines))) ]
     all-lines-numbered))
 
-(s/defn ^:private block-color :- schemas/Color
-  [block :- schemas/Block]
-  (let [type (:type block)]
-    (cond
-      (= type :STRAIGHT) {:r 0 :g 75 :b 255}
-      (= type :L) {:r 255 :g 17 :b 0}
-      (= type :SQUARE) {:r 254 :g 226 :b 62}
-      (= type :T) {:r 99 :g 200 :b 62}
-      (= type :SKEW) {:r 219 :g 48 :b 130}
-      (= type :INVERTED-SKEW) {:r 27 :g 161 :b 266}
-      (= type :INVERTED-L) {:r 255 :g 129 :b 0}
-      :else {:r 40 :g 40 :b 40})))
-
 (s/defn get-matrix :- schemas/Matrix
   [matrix :- schemas/Matrix
    config :- schemas/Config]

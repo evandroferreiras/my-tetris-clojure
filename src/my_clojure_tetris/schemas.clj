@@ -22,7 +22,9 @@
    :height                 s/Int
    (s/optional-key :block) Block})
 
-(s/defschema Matrix [[Tile]])
+(s/defschema Tiles [Tile])
+
+(s/defschema Matrix [Tiles])
 
 (s/defschema Piece
   {:current-column s/Int

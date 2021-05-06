@@ -3,6 +3,7 @@
             [my-clojure-tetris.view :as view]
             [my-clojure-tetris.pieces :as pieces]
             [my-clojure-tetris.matrix :as matrix]
+            [my-clojure-tetris.collision-detection :as collision-detection]
             [schema.core :as s]))
 
 (def CONFIG {:default-width    30
@@ -12,9 +13,6 @@
 
 (def _GAME_MTX_ (atom (matrix/get-matrix [] CONFIG)))
 (def _MTX_ (atom (matrix/get-matrix [] CONFIG)))
-
-;TODO: Move this to other file
-
 (def _CURRENT_PIECE_ (atom (pieces/get-next-piece CONFIG)))
 
 (s/def _LAST_TIME_PIECE_MOVED_ (atom (System/currentTimeMillis)))
@@ -33,18 +31,17 @@
 
 (defn setup-current-piece []
   (when (or (pieces/need-new-piece? @_CURRENT_PIECE_ @_MTX_)
-            (pieces/collided? @_CURRENT_PIECE_ @_GAME_MTX_))
+            (collision-detection/collided? @_CURRENT_PIECE_ @_GAME_MTX_))
     (reset! _CURRENT_PIECE_ (pieces/get-next-piece CONFIG))))
 
 (defn setup-matrix []
   (when (or (pieces/need-new-piece? @_CURRENT_PIECE_ @_MTX_)
-            (pieces/collided? @_CURRENT_PIECE_ @_GAME_MTX_))
+            (collision-detection/collided? @_CURRENT_PIECE_ @_GAME_MTX_))
     (do
       (reset! _GAME_MTX_
               (pieces/insert-piece @_CURRENT_PIECE_ @_GAME_MTX_)))))
 
 (defn run-game []
-  ;TODO: Create a new piece when is needed
   (setup-matrix)
   (setup-current-piece)
   (move-current-piece)
@@ -61,3 +58,8 @@
              :draw (var draw))
 
 (s/set-fn-validation! true)
+
+;TODO: Implement more tests
+;TODO: Use generative tests
+;TODO: Implement directionals
+;TODO: Implement collision on the sides
