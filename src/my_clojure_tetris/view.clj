@@ -20,6 +20,7 @@
         width  (:width tile)
         height (:height tile)]
     (apply-color (blocks/get-color (:block tile)))
+    (q/stroke 80 80 80)
     (q/rect x y width height)))
 
 (s/defn print-blocks!

@@ -3,15 +3,15 @@
             [my-clojure-tetris.schemas :as schemas]))
 
 (s/defn get-x :- s/Int
-        [block :- schemas/Tile]
-        (let [col    (:column block)
-              width  (:width block)]
-          (* col width)))
+  [block :- schemas/Tile]
+  (let [col   (:column block)
+        width (:width block)]
+    (* col width)))
 
 (s/defn get-y
-        [block :- schemas/Tile
-         offset-lines :- s/Int]
-        (* (+ offset-lines (:line block)) (:height block)))
+  [block :- schemas/Tile
+   offset-lines :- s/Int]
+  (* (+ offset-lines (:line block)) (:height block)))
 
 (s/defn calculated-column :- s/Int
   [total-of-columns :- s/Int

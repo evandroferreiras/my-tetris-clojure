@@ -11,14 +11,18 @@
   (game/run-game)
   (view/print-blocks! @game/_MTX_ 2))
 
+(defn key-pressed []
+  (game/manage-key-pressed (q/key-as-keyword)))
+
 (q/defsketch my-tetris-game
              :host "host"
              :size [game/WINDOW-WIDTH game/WINDOW-HEIGHT]
+             :key-pressed (var key-pressed)
              :draw (var draw))
 
 (s/set-fn-validation! true)
 
 ;TODO: Implement more tests
 ;TODO: Use generative tests
-;TODO: Implement directionals
-;TODO: Implement collision on the sides
+;TODO: Implement rotation
+;TODO: Implement score

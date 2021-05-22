@@ -6,10 +6,10 @@
 
 (def tile (-> (gen/generate schemas/Tile)
               (assoc
-                 :column 0
-                 :line 2
-                 :width 10
-                 :height 10)))
+                :column 0
+                :line 2
+                :width 10
+                :height 10)))
 
 (deftest get-x-test
   (is (= 0
@@ -38,9 +38,19 @@
     (let []
       (is (= [tl ts ts tl]
              (tiles/inject-piece-in-column [tl tl tl tl]
-                                            [bk sk sk bk]
-                                            0)))
+                                           [bk sk sk bk]
+                                           0)))
       (is (= [tl ts ts tl]
              (tiles/inject-piece-in-column [tl tl tl tl]
-                                            [bk sk sk]
-                                            0))))))
+                                           [bk sk sk]
+                                           0))))))
+
+(let [line-of-tile  [tl tl tl tl]
+      line-of-piece [bk sk sk]
+      column        0]
+  (tiles/inject-piece-in-column line-of-tile line-of-piece column))
+
+(let [line-of-tile  [tl tl tl tl]
+      line-of-piece [sk sk bk]
+      column        0]
+  (tiles/inject-piece-in-column line-of-tile line-of-piece column))

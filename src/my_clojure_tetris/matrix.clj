@@ -6,7 +6,7 @@
   [config :- schemas/Config]
   {:width  (:default-width config)
    :height (:default-height config)
-   :line 0
+   :line   0
    :column 0})
 
 (s/defn ^:private set-line-number
@@ -14,15 +14,19 @@
    line-number :- s/Int]
   (map #(assoc % :line line-number) lines))
 
+(s/defn empty-line
+  [config :- schemas/Config]
+  (let [total-of-columns (:total-of-columns config)]
+    (take total-of-columns (repeat (empty-tile config)))))
+
 (s/defn ^:private get-empty-matrix :- schemas/Matrix
   [config :- schemas/Config]
-  (let [total-of-lines (:total-of-lines config)
-        total-of-columns (:total-of-columns config)
-        empty-line (take total-of-columns (repeat (empty-tile config)))
+  (let [total-of-lines                (:total-of-lines config)
+        empty-line                    (empty-line config)
         empty-line-with-number-column (map #(assoc %1 :column %2) empty-line (range (count empty-line)))
-        all-lines (into [] (take total-of-lines
-                                 (repeat empty-line-with-number-column)))
-        all-lines-numbered (mapv set-line-number all-lines (range (count all-lines))) ]
+        all-lines                     (into [] (take total-of-lines
+                                                     (repeat empty-line-with-number-column)))
+        all-lines-numbered            (mapv set-line-number all-lines (range (count all-lines)))]
     all-lines-numbered))
 
 (s/defn get-matrix :- schemas/Matrix

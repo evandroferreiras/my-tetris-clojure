@@ -19,6 +19,22 @@
   [piece :- schemas/Piece]
   (update piece :current-line inc))
 
+(s/defn move-left :- schemas/Piece
+  [piece :- schemas/Piece]
+  (let [current-column (:current-column piece)]
+    (if (> current-column 0)
+      (update piece :current-column dec)
+      piece)))
+
+(s/defn move-right :- schemas/Piece
+  [piece :- schemas/Piece
+   config :- schemas/Config]
+  (let [total-columns  (dec (:total-of-columns config))
+        current-column (:current-column piece)]
+    (if (< current-column total-columns)
+      (update piece :current-column inc)
+      piece)))
+
 (s/defn need-new-piece? :- s/Bool
   [piece :- schemas/Piece
    matrix :- schemas/Matrix]

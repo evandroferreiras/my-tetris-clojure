@@ -19,22 +19,33 @@
 (defn move-current-piece []
   (let [currentTimeMillis             (System/currentTimeMillis)
         milli-passed-since-last-moved (- currentTimeMillis @_LAST_TIME_PIECE_MOVED_)]
-    (if (> milli-passed-since-last-moved 100)
+    (if (> milli-passed-since-last-moved 400)
       (do (reset! _LAST_TIME_PIECE_MOVED_ currentTimeMillis)
           (when (true? (pieces/advance-line? @_CURRENT_PIECE_ @_MTX_))
             (swap! _CURRENT_PIECE_ pieces/advance-line))))))
 
 (defn setup-current-piece []
   (when (or (pieces/need-new-piece? @_CURRENT_PIECE_ @_MTX_)
-            (collision-detection/collided? @_CURRENT_PIECE_ @_GAME_MTX_))
+            (collision-detection/next-line-collided? @_CURRENT_PIECE_ @_GAME_MTX_))
     (reset! _CURRENT_PIECE_ (pieces/get-next-piece CONFIG))))
 
 (defn setup-matrix []
   (when (or (pieces/need-new-piece? @_CURRENT_PIECE_ @_MTX_)
-            (collision-detection/collided? @_CURRENT_PIECE_ @_GAME_MTX_))
+            (collision-detection/next-line-collided? @_CURRENT_PIECE_ @_GAME_MTX_))
     (do
       (reset! _GAME_MTX_
               (pieces/insert-piece @_CURRENT_PIECE_ @_GAME_MTX_)))))
+
+(defn go-right? []
+  (not (collision-detection/next-column-collided? @_CURRENT_PIECE_ @_GAME_MTX_)))
+
+(defn go-left? []
+  (not (collision-detection/previous-column-collided? @_CURRENT_PIECE_ @_GAME_MTX_)))
+
+(defn manage-key-pressed [key]
+  (cond
+    (= :right key) (when (true? (go-right?)) (swap! _CURRENT_PIECE_ #(pieces/move-right % CONFIG)))
+    (= :left key) (when (true? (go-left?)) (swap! _CURRENT_PIECE_ pieces/move-left))))
 
 (defn run-game []
   (setup-matrix)
